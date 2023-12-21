@@ -1,13 +1,10 @@
 # DLHDHomeRun
 
-[![PyPI - Version](https://img.shields.io/pypi/v/dlhdhr.svg)](https://pypi.org/project/dlhdhr
-[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/dlhdhr.svg)](https://pypi.org/project/dlhdhr
-
------
-
 **Table of Contents**
 
 - [Installation](#installation)
+- [Configuration](#configuration)
+- [Endpoints](#endpoints)
 - [License](#license)
 
 ## Installation
@@ -15,7 +12,8 @@
 ### pip
 
 ```console
-pip install dlhdhr
+# TODO
+# pip install dlhdhr
 ```
 
 ### docker
