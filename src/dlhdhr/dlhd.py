@@ -9,6 +9,7 @@ import m3u8
 from dlhdhr import config
 
 from dlhdhr.tvg_id import get_tvg_id
+from dlhdhr.zap2it import get_channel_call_sign
 
 
 @dataclass(frozen=True)
@@ -19,6 +20,10 @@ class DLHDChannel:
     @property
     def tvg_id(self) -> str | None:
         return get_tvg_id(self.number)
+
+    @property
+    def call_sign(self) -> str | None:
+        return get_channel_call_sign(self.number)
 
     @property
     def playlist_m3u8(self) -> str:

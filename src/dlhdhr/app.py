@@ -10,6 +10,8 @@ from starlette.responses import JSONResponse, Response, StreamingResponse
 from dlhdhr import config
 from dlhdhr.dlhd import DLHDClient
 from dlhdhr.tuner import TunerManager, TunerNotFoundError
+from dlhdhr.xmltv import generate_xmltv
+from dlhdhr.zap2it import Zap2it
 
 
 def get_public_url(request: Request, path: str) -> str:
@@ -159,20 +161,10 @@ async def xmltv_xml(request: Request) -> Response:
         )
 
     dlhd = cast(DLHDClient, request.app.state.dlhd)
+    zap2it = cast(Zap2it, request.app.state.zap2it)
 
     dlhd_channels = await dlhd.get_channels()
-
-    response = '<tv generator-info-name="dlhdhr">'
-
-    for channel in dlhd_channels:
-        name = saxutils.escape(channel.name)
-        response += f'<channel id="{channel.number}">'
-        response += f'<display-name lang="en">{name}</display-name>'
-        response += f"<lcn>{channel.number}</lcn>"
-        response += "</channel>"
-    response += "</tv>"
-
-    return Response(response, media_type="application/xml; charset=utf-8")
+    return Response(await generate_xmltv(dlhd_channels, zap2it), media_type="application/xml; charset=utf-8")
 
 
 async def iptv_m3u(request: Request) -> Response:
@@ -193,10 +185,12 @@ async def iptv_m3u(request: Request) -> Response:
 def create_app() -> Starlette:
     dlhd_client = DLHDClient()
     tuner_manager = TunerManager()
+    zap2it = Zap2it()
 
     app = Starlette()
     app.state.dlhd = dlhd_client
     app.state.tuners = tuner_manager
+    app.state.zap2it = zap2it
     app.add_route("/discover.json", discover_json)
     app.add_route("/lineup_status.json", lineup_status_json)
     app.add_route("/listings.json", listings_json)
