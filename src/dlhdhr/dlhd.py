@@ -1,3 +1,4 @@
+import base64
 from dataclasses import dataclass
 import time
 import urllib.parse
@@ -55,7 +56,7 @@ class DLHDClient:
             headers=headers,
             max_redirects=2,
             verify=True,
-            timeout=1.0,
+            timeout=3.0,
         )
 
     async def _refresh_channels(self):
@@ -120,9 +121,45 @@ class DLHDClient:
             res.raise_for_status()
 
             mono_playlist = m3u8.loads(res.content.decode())
+
+            new_keys = []
+            for key in mono_playlist.keys:
+                if not key:
+                    continue
+
+                uri = str(key.absolute_uri or key.uri)
+                if not uri:
+                    continue
+
+                proxy_uri = base64.urlsafe_b64encode(uri.encode())
+                new_key = m3u8.Key(
+                    method=key.method,
+                    base_uri=None,
+                    uri=f"/channel/{channel.number}/key/{proxy_uri.decode()}",
+                    iv=key.iv,
+                    keyformat=key.keyformat,
+                    keyformatversions=key.keyformatversions,
+                    **key._extra_params,
+                )
+                new_keys.append(new_key)
+
+                for segment in mono_playlist.segments:
+                    if segment.key == key:
+                        segment.key = new_key
+
+            mono_playlist.keys = new_keys
             self._base_urls[channel] = (time.time(), mono_url)
 
         return mono_playlist
+
+    async def get_channel_key(self, channel: DLHDChannel, proxy_url: str) -> bytes:
+        base_url = await self.get_channel_base_url(channel)
+
+        async with self._get_client(referer=base_url) as client:
+            res = await client.get(proxy_url)
+            res.raise_for_status()
+
+            return res.content
 
     async def get_channel_base_url(self, channel: DLHDChannel) -> str:
         created, base_url = self._base_urls.get(channel, (None, None))

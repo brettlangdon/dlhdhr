@@ -1,3 +1,4 @@
+import base64
 from typing import cast
 import urllib.parse
 from xml.sax import saxutils
@@ -182,6 +183,20 @@ async def iptv_m3u(request: Request) -> Response:
     return Response(output, media_type="text/plain")
 
 
+async def channel_key_proxy(request: Request) -> Response:
+    channel_number: str = str(request.path_params["channel_number"])
+    proxy_url: bytes = base64.urlsafe_b64decode(request.path_params["proxy_url"])
+
+    dlhd = cast(DLHDClient, request.app.state.dlhd)
+    channel = await dlhd.get_channel(channel_number)
+    if not channel:
+        return Response("", status_code=404)
+
+    key = await dlhd.get_channel_key(channel, proxy_url.decode())
+
+    return Response(key, status_code=200, media_type="application/octet-stream")
+
+
 def create_app() -> Starlette:
     dlhd_client = DLHDClient()
     tuner_manager = TunerManager()
@@ -199,6 +214,7 @@ def create_app() -> Starlette:
     app.add_route("/iptv.m3u", iptv_m3u)
     app.add_route("/channel/{channel_number:int}/playlist.m3u8", channel_playlist_m3u8)
     app.add_route("/channel/{channel_number:int}/{segment_path:path}.ts", channel_segment_ts)
+    app.add_route("/channel/{channel_number:int}/key/{proxy_url:str}", channel_key_proxy)
     app.add_route("/channel/{channel_number:int}", channel_proxy)
 
     return app
