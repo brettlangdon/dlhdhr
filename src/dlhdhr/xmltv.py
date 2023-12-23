@@ -12,6 +12,7 @@ async def generate_xmltv(channels: list[DLHDChannel], zap2it: Zap2it) -> bytes:
         SubElement(ch_node, "display-name", attrib={"lang": "en"}).text = channel.name
         SubElement(ch_node, "lcn").text = channel.number
 
+    for channel in channels:
         if not channel.call_sign:
             continue
 
