@@ -163,12 +163,15 @@ class Zap2it:
                 if call_sign in self._listings:
                     channel = self._listings[call_sign]
                 else:
+                    thumbnail = ch_data["thumbnail"]
+                    if thumbnail.startswith("//"):
+                        thumbnail = f"https:{thumbnail}"
                     channel = self.Channel(
                         call_sign=call_sign,
                         name=ch_data["affiliateName"],
                         number=ch_data["channelNo"],
                         id=ch_data["id"],
-                        thumbnail=ch_data["thumbnail"],
+                        thumbnail=thumbnail,
                     )
                     self._listings[call_sign] = channel
 
@@ -181,7 +184,7 @@ class Zap2it:
                         duration=evt_data["duration"],
                         rating=evt_data["rating"],
                         tags=evt_data["tags"],
-                        thumbnail=f"//zap2it.tmsimg.com/assets/{evt_data['thumbnail']}.jpg?w=165",
+                        thumbnail=f"https://zap2it.tmsimg.com/assets/{evt_data['thumbnail']}.jpg?w=165",
                         series_id=evt_data["seriesId"],
                         start_time=datetime.datetime.fromisoformat(evt_data["startTime"]),
                         end_time=end_time,
