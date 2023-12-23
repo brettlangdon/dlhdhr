@@ -29,14 +29,12 @@ async def generate_xmltv(channels: list[DLHDChannel], zap2it: Zap2it) -> bytes:
             end_time = event.start_time.strftime("%Y%m%d%H%M%S %z")
 
             programme = SubElement(
-                tv, "programme", attrib={"start": start_time, "stop": end_time, "channel": channel.tvg_id}
+                tv, "programme", attrib={"start": start_time, "stop": end_time, "channel": channel.number}
             )
             if event.program.title:
                 SubElement(programme, "title", attrib={"lang": "en"}).text = event.program.title
             if event.program.short_desc:
-                SubElement(
-                    programme, "desc", attrib={"lang": "en", "desc": event.program.short_desc}
-                ).text = event.program.short_desc
+                SubElement(programme, "desc", attrib={"lang": "en"}).text = event.program.short_desc
 
             if event.program.release_year:
                 SubElement(programme, "date").text = event.program.release_year
