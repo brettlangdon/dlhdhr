@@ -11,6 +11,7 @@ def _set_or_none(name: str) -> set[str] | None:
 
 HOST = os.getenv("DLHDHR_HOST", "127.0.0.1")
 PORT: int = int(os.getenv("DLHDHR_PORT", 8000))
+DEBUG: bool = os.getenv("DLHDHR_DEBUG", "0").lower() in ("1", "true")
 
 DLHD_BASE_URL = os.getenv("DLHD_BASE_URL", "https://dlhd.sx/")
 DLHD_INDEX_M3U8_PATTERN = os.getenv(

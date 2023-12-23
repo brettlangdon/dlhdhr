@@ -1,5 +1,7 @@
 import asyncio
 
+from dlhdhr import config
+
 
 class FFMpegNotStartedError(Exception):
     pass
@@ -11,6 +13,10 @@ class FFMpegProcess:
     _process: asyncio.subprocess.Process | None = None
 
     def __init__(self, playlist_url: str):
+        log_level = "quiet"
+        if config.DEBUG:
+            log_level = "debug"
+
         self._ffmpeg_command = " ".join(
             [
                 "ffmpeg",
@@ -27,7 +33,7 @@ class FFMpegProcess:
                 "-f",
                 "mpegts",
                 "-loglevel",
-                "quiet",
+                log_level,
                 "pipe:1",
             ]
         )
@@ -53,10 +59,16 @@ class FFMpegProcess:
 
     async def _start(self) -> None:
         if not self._process:
+            stderr = asyncio.subprocess.DEVNULL
+            if config.DEBUG:
+                # When debugging let ffmpeg write to normal stderr
+                # do we see the logs in the application stderr
+                stderr = None
+
             self._process = await asyncio.subprocess.create_subprocess_shell(
                 self._ffmpeg_command,
                 stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.DEVNULL,
+                stderr=stderr,
             )
 
     def _stop(self) -> None:
