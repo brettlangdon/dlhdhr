@@ -8,10 +8,10 @@ async def generate_xmltv(channels: list[DLHDChannel], zap2it: Zap2it) -> bytes:
     tv = Element("tv", attrib={"generator-info-name": "dlhdhr"})
 
     for channel in channels:
-        if not channel.tvg_id:
+        if not channel.xmltv_id:
             continue
 
-        ch_node = SubElement(tv, "channel", attrib={"id": channel.tvg_id})
+        ch_node = SubElement(tv, "channel", attrib={"id": channel.xmltv_id})
         SubElement(ch_node, "display-name", attrib={"lang": "en"}).text = channel.name
         SubElement(ch_node, "lcn").text = channel.number
 
@@ -19,7 +19,7 @@ async def generate_xmltv(channels: list[DLHDChannel], zap2it: Zap2it) -> bytes:
         if not channel.call_sign:
             continue
 
-        if not channel.tvg_id:
+        if not channel.xmltv_id:
             continue
 
         z_channel = await zap2it.get_channel(channel.call_sign)
@@ -34,7 +34,7 @@ async def generate_xmltv(channels: list[DLHDChannel], zap2it: Zap2it) -> bytes:
             end_time = event.start_time.strftime("%Y%m%d%H%M%S %z")
 
             programme = SubElement(
-                tv, "programme", attrib={"start": start_time, "stop": end_time, "channel": channel.tvg_id}
+                tv, "programme", attrib={"start": start_time, "stop": end_time, "channel": channel.xmltv_id}
             )
             if event.program.title:
                 SubElement(programme, "title", attrib={"lang": "en"}).text = event.program.title

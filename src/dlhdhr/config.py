@@ -20,6 +20,8 @@ DLHD_INDEX_M3U8_PATTERN = os.getenv(
 
 CHANNEL_EXCLUDE: set[str] | None = _set_or_none("DLHDHR_CHANNEL_EXCLUDE")
 CHANNEL_ALLOW: set[str] | None = _set_or_none("DLHDHR_CHANNEL_ALLOW")
+COUNTRY_EXCLUDE: set[str] | None = _set_or_none("DLHDHR_COUNTRY_EXCLUDE")
+COUNTRY_ALLOW: set[str] | None = _set_or_none("DLHDHR_COUNTRY_ALLOW")
 
 EPG_PROVIDER: str | None = os.getenv("DLHDHR_EPG_PROVIDER")
 EPG_BEST_XMLTV_URL: str | None = os.getenv("DLHDHR_EPG_BEST_XMLTV_URL")

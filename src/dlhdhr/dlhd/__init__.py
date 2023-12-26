@@ -1,38 +1,13 @@
 import base64
-from dataclasses import dataclass
 import time
 import urllib.parse
 
-import lxml.etree
 import httpx
 import m3u8
 
 from dlhdhr import config
 
-from dlhdhr.tvg_id import get_tvg_id
-from dlhdhr.zap2it import get_channel_call_sign
-
-
-@dataclass(frozen=True)
-class DLHDChannel:
-    number: str
-    name: str
-
-    @property
-    def tvg_id(self) -> str | None:
-        return get_tvg_id(self.number)
-
-    @property
-    def call_sign(self) -> str | None:
-        return get_channel_call_sign(self.number)
-
-    @property
-    def playlist_m3u8(self) -> str:
-        return f"/channel/{self.number}/playlist.m3u8"
-
-    @property
-    def channel_proxy(self) -> str:
-        return f"/channel/{self.number}"
+from dlhdhr.dlhd.channels import DLHDChannel, get_channels
 
 
 class DLHDClient:
@@ -59,50 +34,14 @@ class DLHDClient:
             timeout=3.0,
         )
 
-    async def _refresh_channels(self):
-        now = time.time()
-        if self._channels and now - self._channels_last_fetch < DLHDClient.CHANNEL_REFRESH:
-            return
-
-        self._channels_last_fetch = time.time()
-
-        channels: dict[str, DLHDChannel] = {}
-        async with self._get_client() as client:
-            res = await client.get("/24-7-channels.php")
-            res.raise_for_status()
-
-            root = lxml.etree.HTML(res.content)
-            for channel_link in root.cssselect(".grid-item a"):
-                href: str = channel_link.get("href")
-                if not href:
-                    continue
-
-                channel_number, _, _ = href.split("-")[1].partition(".")
-                channel_number.strip().lower()
-
-                # Skip any not explicitly defined in the allow list
-                if config.CHANNEL_ALLOW is not None:
-                    if channel_number not in config.CHANNEL_ALLOW:
-                        continue
-
-                # Skip any that are explicitly defined in the deny list
-                if config.CHANNEL_EXCLUDE is not None:
-                    if channel_number in config.CHANNEL_EXCLUDE:
-                        cotninue
-
-                channels[channel_number] = DLHDChannel(
-                    number=channel_number, name=channel_link.cssselect("strong")[0].text.strip()
-                )
-
-        self._channels = channels
-
     async def get_channels(self) -> list[DLHDChannel]:
-        await self._refresh_channels()
-        return list(self._channels.values())
+        return get_channels()
 
     async def get_channel(self, channel_number: str) -> DLHDChannel | None:
-        await self._refresh_channels()
-        return self._channels.get(channel_number)
+        for channel in self.get_channels():
+            if channel.number == channel_number:
+                return channel
+        return None
 
     async def get_channel_playlist(self, channel: DLHDChannel) -> m3u8.M3U8:
         index_m3u8 = config.DLHD_INDEX_M3U8_PATTERN.format(channel=channel)

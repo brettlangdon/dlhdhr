@@ -7,65 +7,6 @@ import httpx
 from dlhdhr import config
 
 
-# Mapping of DLHD channel number to zap2it call sign
-_MAPPING = dict(
-    [
-        ("44", "ESPN"),
-        ("45", "ESPN2"),
-        ("66", "TUDN"),
-        ("295", "TOON"),
-        ("298", "FXX"),
-        ("301", "FREEFRM"),
-        ("303", "AMC"),
-        ("305", "BBCA"),
-        ("306", "BET"),
-        ("307", "BRAVO"),
-        ("309", "CNBC"),
-        ("310", "COMEDY"),
-        ("312", "DISN"),
-        ("316", "ESPNU"),
-        ("317", "FX"),
-        ("319", "GSN"),
-        ("321", "HBO"),
-        ("325", "ION"),
-        ("326", "LIFE"),
-        ("327", "MSNBC"),
-        ("329", "NICJR"),
-        ("330", "NIK"),
-        ("331", "OWN"),
-        ("333", "SHOW"),
-        ("334", "PAR"),
-        ("335", "STARZ"),
-        ("336", "TBS"),
-        ("337", "TLC"),
-        ("338", "TNT"),
-        ("339", "TOON"),
-        ("340", "TRAV"),
-        ("343", "USA"),
-        ("344", "VH1"),
-        ("345", "CNN"),
-        ("371", "MTV"),
-        ("373", "SYFY"),
-        ("381", "FXM"),
-        ("382", "HGTV"),
-        ("647", "CMTV"),
-        ("651", "DEST"),
-        ("658", "SUNDANC"),
-        ("665", "FYISD"),
-        ("689", "HBO2"),
-        ("691", "HBOF"),
-        ("693", "HBOSIG"),
-        ("697", "COOK"),
-        ("745", "NGC"),
-        ("766", "ABC"),
-    ]
-)
-
-
-def get_channel_call_sign(channel_number: str) -> str | None:
-    return _MAPPING.get(channel_number)
-
-
 class Zap2it:
     _BASE_URL = "https://tvlistings.zap2it.com/api/"
     _listings: dict[str, "Zap2it.Channel"]
