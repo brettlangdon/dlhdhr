@@ -11,8 +11,7 @@ from starlette.responses import JSONResponse, Response, StreamingResponse
 from dlhdhr import config
 from dlhdhr.dlhd import DLHDClient
 from dlhdhr.tuner import TunerManager, TunerNotFoundError
-from dlhdhr.xmltv import generate_xmltv
-from dlhdhr.zap2it import Zap2it
+from dlhdhr.epg import EPG
 
 
 def get_public_url(request: Request, path: str) -> str:
@@ -91,6 +90,7 @@ async def channel_proxy(request: Request) -> Response:
 async def listings_json(request: Request) -> JSONResponse:
     dlhd = cast(DLHDClient, request.app.state.dlhd)
     channels = sorted(await dlhd.get_channels(), key=lambda c: int(c.number))
+
     return JSONResponse(
         [
             {
@@ -99,6 +99,7 @@ async def listings_json(request: Request) -> JSONResponse:
                 "URL": get_public_url(request, channel.channel_proxy),
             }
             for channel in channels
+            if not channel.country_code
         ]
     )
 
@@ -135,37 +136,11 @@ async def lineup_status_json(_: Request) -> JSONResponse:
 
 
 async def xmltv_xml(request: Request) -> Response:
-    if config.EPG_PROVIDER == "epg.best":
-        if not config.EPG_BEST_XMLTV_URL:
-            return Response("", status_code=404)
-
-        async def _generator():
-            if not config.EPG_BEST_XMLTV_URL:
-                return
-
-            async with httpx.AsyncClient() as client:
-                async with client.stream("GET", config.EPG_BEST_XMLTV_URL) as res:
-                    async for chunk in res.aiter_bytes():
-                        yield chunk
-
-        headers = {}
-        if config.EPG_BEST_XMLTV_URL.endswith(".gz"):
-            headers["Content-Encoding"] = "gzip"
-
-        return StreamingResponse(
-            _generator(),
-            status_code=200,
-            media_type="application/xml; charset=utf-8",
-            headers={
-                "Content-Encoding": "gzip",
-            },
-        )
-
     dlhd = cast(DLHDClient, request.app.state.dlhd)
-    zap2it = cast(Zap2it, request.app.state.zap2it)
+    epg = cast(EPG, request.app.state.epg)
 
     dlhd_channels = await dlhd.get_channels()
-    return Response(await generate_xmltv(dlhd_channels, zap2it), media_type="application/xml; charset=utf-8")
+    return Response(await epg.generate_xmltv(dlhd_channels), media_type="application/xml; charset=utf-8")
 
 
 async def iptv_m3u(request: Request) -> Response:
@@ -200,12 +175,12 @@ async def channel_key_proxy(request: Request) -> Response:
 def create_app() -> Starlette:
     dlhd_client = DLHDClient()
     tuner_manager = TunerManager()
-    zap2it = Zap2it()
+    epg = EPG()
 
     app = Starlette()
     app.state.dlhd = dlhd_client
     app.state.tuners = tuner_manager
-    app.state.zap2it = zap2it
+    app.state.epg = EPG()
     app.add_route("/discover.json", discover_json)
     app.add_route("/lineup_status.json", lineup_status_json)
     app.add_route("/listings.json", listings_json)
