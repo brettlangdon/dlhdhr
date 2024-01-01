@@ -1,5 +1,6 @@
 import base64
 import time
+from typing import Iterator
 import urllib.parse
 
 import httpx
@@ -34,10 +35,10 @@ class DLHDClient:
             timeout=3.0,
         )
 
-    async def get_channels(self) -> list[DLHDChannel]:
+    def get_channels(self) -> Iterator[DLHDChannel]:
         return get_channels()
 
-    async def get_channel(self, channel_number: str) -> DLHDChannel | None:
+    def get_channel(self, channel_number: str) -> DLHDChannel | None:
         for channel in self.get_channels():
             if channel.number == channel_number:
                 return channel

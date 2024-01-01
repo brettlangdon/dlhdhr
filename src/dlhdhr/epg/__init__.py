@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from typing import Iterable
 from xml.etree.ElementTree import Element, tostring
 
 
@@ -20,7 +21,7 @@ class EPG:
 
         return []
 
-    async def generate_xmltv(self, channels: list[DLHDChannel]) -> bytes:
+    async def generate_xmltv(self, channels: Iterable[DLHDChannel]) -> bytes:
         tv = Element("tv", attrib={"generator-info-name": "dlhdhr"})
 
         channels = [c for c in channels if c.xmltv_id]

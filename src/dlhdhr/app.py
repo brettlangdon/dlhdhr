@@ -22,7 +22,7 @@ async def channel_playlist_m3u8(request: Request) -> Response:
     channel_number: str = str(request.path_params["channel_number"])
 
     dlhd = cast(DLHDClient, request.app.state.dlhd)
-    channel = await dlhd.get_channel(channel_number)
+    channel = dlhd.get_channel(channel_number)
     if not channel:
         return Response("", status_code=404)
 
@@ -37,7 +37,7 @@ async def channel_segment_ts(request: Request) -> Response:
     dlhd = cast(DLHDClient, request.app.state.dlhd)
 
     dlhd = cast(DLHDClient, request.app.state.dlhd)
-    channel = await dlhd.get_channel(channel_number)
+    channel = dlhd.get_channel(channel_number)
     if not channel:
         return Response("", status_code=404)
 
@@ -58,7 +58,7 @@ async def channel_proxy(request: Request) -> Response:
 
     dlhd = cast(DLHDClient, request.app.state.dlhd)
 
-    channel = await dlhd.get_channel(channel_number)
+    channel = dlhd.get_channel(channel_number)
     if not channel:
         return Response("", status_code=404)
 
@@ -89,7 +89,7 @@ async def channel_proxy(request: Request) -> Response:
 
 async def listings_json(request: Request) -> JSONResponse:
     dlhd = cast(DLHDClient, request.app.state.dlhd)
-    channels = sorted(await dlhd.get_channels(), key=lambda c: int(c.number))
+    channels = sorted(dlhd.get_channels(), key=lambda c: int(c.number))
 
     return JSONResponse(
         [
@@ -138,19 +138,19 @@ async def xmltv_xml(request: Request) -> Response:
     dlhd = cast(DLHDClient, request.app.state.dlhd)
     epg = cast(EPG, request.app.state.epg)
 
-    dlhd_channels = await dlhd.get_channels()
+    dlhd_channels = dlhd.get_channels()
     return Response(await epg.generate_xmltv(dlhd_channels), media_type="application/xml; charset=utf-8")
 
 
 async def iptv_m3u(request: Request) -> Response:
     dlhd = cast(DLHDClient, request.app.state.dlhd)
-    dlhd_channels = await dlhd.get_channels()
+    dlhd_channels = dlhd.get_channels()
 
     output = "#EXTM3U\n"
     for channel in dlhd_channels:
-        if not channel.tvg_id:
+        if not channel.xmltv_id:
             continue
-        output += f'#EXTINF:-1 CUID="{channel.number}" tvg-id="{channel.tvg_id}" tvg-chno="{channel.number}" channel-id="{channel.number}",{channel.name}\n'
+        output += f'#EXTINF:-1 CUID="{channel.number}" tvg-id="{channel.xmltv_id}" tvg-chno="{channel.number}" channel-id="{channel.number}",{channel.name}\n'
         output += get_public_url(request, channel.channel_proxy)
         output += "\n"
 
@@ -162,7 +162,7 @@ async def channel_key_proxy(request: Request) -> Response:
     proxy_url: bytes = base64.urlsafe_b64decode(request.path_params["proxy_url"])
 
     dlhd = cast(DLHDClient, request.app.state.dlhd)
-    channel = await dlhd.get_channel(channel_number)
+    channel = dlhd.get_channel(channel_number)
     if not channel:
         return Response("", status_code=404)
 

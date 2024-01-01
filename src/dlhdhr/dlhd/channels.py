@@ -42,7 +42,7 @@ _CHANNELS = [
         number="37", name="Sky Sports Action UK", country_code="uk", xmltv_id="SkySportsAction.uk", call_sign=""
     ),
     DLHDChannel(
-        number="38", name="Sky Sports Main Event", country_code="gb", xmltv_id="SkySportsMainEvent.uk", call_sign=""
+        number="38", name="Sky Sports Main Event", country_code="uk", xmltv_id="SkySportsMainEvent.uk", call_sign=""
     ),
     DLHDChannel(number="39", name="Fox Sports 1 USA", country_code="us", xmltv_id="FoxSports1.us", call_sign=""),
     DLHDChannel(number="40", name="Tennis Channel", country_code="us", xmltv_id="TennisChannel.us", call_sign="TENNIS"),
