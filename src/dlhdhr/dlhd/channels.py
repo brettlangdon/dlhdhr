@@ -6,7 +6,7 @@ from typing import Iterator
 from dlhdhr import config
 
 
-@dataclass(frozen=False)
+@dataclass(frozen=True)
 class DLHDChannel:
     number: str
     name: str
