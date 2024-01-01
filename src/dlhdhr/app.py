@@ -99,7 +99,6 @@ async def listings_json(request: Request) -> JSONResponse:
                 "URL": get_public_url(request, channel.channel_proxy),
             }
             for channel in channels
-            if not channel.country_code
         ]
     )
 
