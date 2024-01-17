@@ -32,7 +32,7 @@ class DLHDClient:
             headers=headers,
             max_redirects=2,
             verify=True,
-            timeout=3.0,
+            timeout=8.0,
         )
 
     def get_channels(self) -> Iterator[DLHDChannel]:
