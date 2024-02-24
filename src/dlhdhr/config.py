@@ -14,9 +14,6 @@ PORT: int = int(os.getenv("DLHDHR_PORT", 8000))
 DEBUG: bool = os.getenv("DLHDHR_DEBUG", "0").lower() in ("1", "true")
 
 DLHD_BASE_URL = os.getenv("DLHD_BASE_URL", "https://dlhd.sx/")
-DLHD_INDEX_M3U8_PATTERN = os.getenv(
-    "DLHD_INDEX_M3U8_PATTERN", "https://webudit.webhd.ru/lb/premium{channel.number}/index.m3u8"
-)
 
 CHANNEL_EXCLUDE: set[str] | None = _set_or_none("DLHDHR_CHANNEL_EXCLUDE")
 CHANNEL_ALLOW: set[str] | None = _set_or_none("DLHDHR_CHANNEL_ALLOW")

@@ -2,7 +2,10 @@ import base64
 import time
 from typing import Iterator
 import urllib.parse
+import re
 
+
+from lxml import html
 import httpx
 import m3u8
 
@@ -17,10 +20,23 @@ class DLHDClient:
     _channels: dict[str, DLHDChannel]
     _channels_last_fetch: float = 0
     _base_urls: dict[DLHDChannel, (float, str)]
+    _cookies: dict[str, str]
 
     def __init__(self):
         self._channels = {}
         self._base_urls = {}
+        self._cookies = {}
+
+    async def _log_request(self, request):
+        if config.DEBUG:
+            print(f"Request event hook: {request.method} {request.url} - Waiting for response")
+
+    async def _log_response(self, response):
+        if config.DEBUG:
+            request = response.request
+            print(f"Response event hook: {request.method} {request.url} - Status {response.status_code}")
+
+        self._cookies.update(response.cookies)
 
     def _get_client(self, referer: str = ""):
         headers = {
@@ -33,6 +49,8 @@ class DLHDClient:
             max_redirects=2,
             verify=True,
             timeout=8.0,
+            cookies=self._cookies,
+            event_hooks={"request": [self._log_request], "response": [self._log_response]},
         )
 
     def get_channels(self) -> Iterator[DLHDChannel]:
@@ -45,11 +63,25 @@ class DLHDClient:
         return None
 
     async def get_channel_playlist(self, channel: DLHDChannel) -> m3u8.M3U8:
-        index_m3u8 = config.DLHD_INDEX_M3U8_PATTERN.format(channel=channel)
-
         referer = f"https://weblivehdplay.ru/premiumtv/daddyhd.php?id={channel.number}"
         async with self._get_client(referer=referer) as client:
-            res = await client.get(index_m3u8, follow_redirects=True)
+            res = await client.get(referer, follow_redirects=True)
+            res.raise_for_status()
+            referer = str(res.request.url)
+
+            content = html.fromstring(res.content)
+            scripts = content.cssselect(".player_div script")
+            index_m3u8_url = None
+            for script in scripts:
+                urls = re.findall(r"source:'(https://.*?index\.m3u8.*?)'", script.text)
+                if urls:
+                    index_m3u8_url = urls[0]
+                    break
+            else:
+                raise ValueError("Could not find index m3u8")
+
+        async with self._get_client(referer=referer) as client:
+            res = await client.get(index_m3u8_url, follow_redirects=True)
             res.raise_for_status()
 
             playlist = m3u8.loads(res.content.decode())
@@ -88,13 +120,12 @@ class DLHDClient:
                         segment.key = new_key
 
             mono_playlist.keys = new_keys
-            self._base_urls[channel] = (time.time(), mono_url)
+            self._base_urls[channel] = (time.time(), referer)
 
         return mono_playlist
 
     async def get_channel_key(self, channel: DLHDChannel, proxy_url: str) -> bytes:
         base_url = await self.get_channel_base_url(channel)
-
         async with self._get_client(referer=base_url) as client:
             res = await client.get(proxy_url)
             res.raise_for_status()
@@ -106,11 +137,11 @@ class DLHDClient:
         if not created or not base_url:
             # This is how we get and populate the base url
             await self.get_channel_playlist(channel)
-            return self._base_urls[channel][0]
+            return self._base_urls[channel][1]
 
         if (time.time() - created) > 60:
             await self.get_channel_playlist(channel)
-            return self._base_urls[channel][0]
+            return self._base_urls[channel][1]
 
         return base_url
 
