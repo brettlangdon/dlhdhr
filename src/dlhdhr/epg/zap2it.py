@@ -59,17 +59,30 @@ class Zap2it:
         listings: dict[str, list[Program]] = {}
         now = datetime.datetime.now(datetime.UTC)
         async with self._get_client() as client:
-            res = await client.get("/grid", params=params)
-            res.raise_for_status()
+            channels = set()
+            events = {}
 
-            data = res.json()
+            # Fetch up to 18 hours into the future
+            for i in range(1, 3, 1):
+                params["time"] = str(int(time.time()) + (21600 * i))
+                res = await client.get("/grid", params=params)
+                res.raise_for_status()
 
-            for ch_data in data["channels"]:
-                call_sign = ch_data["callSign"]
+                data = res.json()
+                for ch_data in data["channels"]:
+                    call_sign = ch_data["callSign"]
+                    channels.add(call_sign)
+                    if call_sign not in events:
+                        events[call_sign] = {}
+
+                    for evt in ch_data["events"]:
+                        key = (evt["startTime"], evt["endTime"])
+                        if key not in events[call_sign]:
+                            events[call_sign][key] = evt
+
+            for call_sign in channels:
                 programs = []
-                listings[call_sign] = programs
-
-                for evt_data in ch_data["events"]:
+                for evt_data in events[call_sign].values():
                     end_time = datetime.datetime.fromisoformat(evt_data["endTime"])
                     if end_time < now:
                         continue
@@ -92,6 +105,9 @@ class Zap2it:
                             rating=rating,
                         )
                     )
+
+                listings[call_sign] = sorted(programs, key=lambda p: p.start_time, reverse=True)
+
         return listings
 
     async def _refresh_listings(self) -> dict[str, list[Program]]:
