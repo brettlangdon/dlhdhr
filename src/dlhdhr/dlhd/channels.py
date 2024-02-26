@@ -164,7 +164,7 @@ _CHANNELS = [
     ),
     DLHDChannel(
         number="130",
-        name="Sky sports Premier League",
+        name="Sky Sports Premier League",
         country_code="uk",
         xmltv_id="SkySportsPremiereLeague.uk",
         call_sign="sky-sports-premier-league",
