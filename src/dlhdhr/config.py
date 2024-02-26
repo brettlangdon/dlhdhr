@@ -21,3 +21,4 @@ COUNTRY_EXCLUDE: set[str] | None = _set_or_none("DLHDHR_COUNTRY_EXCLUDE")
 COUNTRY_ALLOW: set[str] | None = _set_or_none("DLHDHR_COUNTRY_ALLOW")
 
 ZAP2IT_REFRESH_DELAY: int = int(os.getenv("DLHDHR_ZAP2IT_REFRESH_DELAY", "3600"))
+ZAPTV_REFRESH_DELAY: int = int(os.getenv("DLHDHR_ZAPTV_REFRESH_DELAY", "3600"))
