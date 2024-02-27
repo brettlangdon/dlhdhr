@@ -19,7 +19,7 @@ class ZapTV:
     def _get_client(self) -> httpx.AsyncClient:
         return httpx.AsyncClient(
             base_url=self._BASE_URL,
-            timeout=2.0,
+            timeout=5.0,
             verify=True,
             max_redirects=1,
             headers={
