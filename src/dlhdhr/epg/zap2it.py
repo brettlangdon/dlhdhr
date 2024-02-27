@@ -63,7 +63,7 @@ class Zap2it:
             events = {}
 
             # Fetch up to 18 hours into the future
-            for i in range(1, 3, 1):
+            for i in range(3):
                 params["time"] = str(int(time.time()) + (21600 * i))
                 res = await client.get("/grid", params=params)
                 res.raise_for_status()
