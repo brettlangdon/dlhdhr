@@ -30,7 +30,6 @@ class EPG:
         for channel in channels:
             tv.append(channel.to_xmltv())
 
-        for channel in channels:
             programs = await self.get_channel_programs(channel)
 
             # Note: The order of the elements in the <programme /> matters
