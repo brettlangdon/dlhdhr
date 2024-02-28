@@ -26,13 +26,10 @@ class Program:
     release_year: str | None
 
     def to_xmltv(self, channel: DLHDChannel) -> Element | None:
-        if not channel.xmltv_id:
-            return None
-
         start_time = self.start_time.strftime("%Y%m%d%H%M%S %z")
         end_time = self.start_time.strftime("%Y%m%d%H%M%S %z")
 
-        programme = Element("programme", attrib={"start": start_time, "stop": end_time, "channel": channel.xmltv_id})
+        programme = Element("programme", attrib={"start": start_time, "stop": end_time, "channel": str(channel.number)})
         if self.title:
             SubElement(programme, "title", attrib={"lang": "en"}).text = self.title
         if self.subtitle:

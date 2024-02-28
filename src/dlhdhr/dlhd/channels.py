@@ -23,7 +23,7 @@ class DLHDChannel:
         return f"/channel/{self.number}"
 
     def to_xmltv(self) -> Element:
-        node = Element("channel", attrib={"id": self.xmltv_id})
+        node = Element("channel", attrib={"id": str(self.number)})
         SubElement(node, "display-name", attrib={"lang": "en"}).text = self.name
         SubElement(node, "lcn").text = self.number
         return node
