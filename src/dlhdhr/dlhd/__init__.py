@@ -20,11 +20,13 @@ class DLHDClient:
     _channels: dict[str, DLHDChannel]
     _channels_last_fetch: float = 0
     _base_urls: dict[DLHDChannel, (float, str)]
+    _referers: dict[DLHDChannel, str]
     _cookies: dict[str, str]
 
     def __init__(self):
         self._channels = {}
         self._base_urls = {}
+        self._referers = {}
         self._cookies = {}
 
     async def _log_request(self, request):
@@ -40,7 +42,7 @@ class DLHDClient:
 
     def _get_client(self, referer: str = ""):
         headers = {
-            "User-Agent": "",
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:122.0) Gecko/20100101 Firefox/122.0",
             "Referer": referer,
         }
         return httpx.AsyncClient(
@@ -62,11 +64,22 @@ class DLHDClient:
                 return channel
         return None
 
+    async def get_channel_referer(self, channel: DLHDChannel) -> str:
+        if channel not in self._referers:
+            base_url = f"https://weblivehdplay.ru/premiumtv/daddyhd.php?id={channel.number}"
+            referer = f"https://dlhd.sx/stream/stream-{channel.number}.php"
+            async with self._get_client(referer=referer) as client:
+                res = await client.get(base_url, follow_redirects=True)
+                res.raise_for_status()
+                self._referers[channel] = str(res.request.url)
+        return self._referers[channel]
+
     async def get_channel_playlist(self, channel: DLHDChannel) -> m3u8.M3U8:
         base_url = f"https://weblivehdplay.ru/premiumtv/daddyhd.php?id={channel.number}"
-        referer = base_url
+        referer = f"https://dlhd.sx/stream/stream-{channel.number}.php"
+
         async with self._get_client(referer=referer) as client:
-            res = await client.get(referer, follow_redirects=True)
+            res = await client.get(base_url, follow_redirects=True)
             res.raise_for_status()
             referer = str(res.request.url)
 
@@ -126,7 +139,7 @@ class DLHDClient:
         return mono_playlist
 
     async def get_channel_key(self, channel: DLHDChannel, proxy_url: str) -> bytes:
-        referer = f"https://weblivehdplay.ru/premiumtv/daddyhd.php?id={channel.number}"
+        referer = await self.get_channel_referer(channel)
         async with self._get_client(referer=referer) as client:
             res = await client.get(proxy_url)
             res.raise_for_status()
@@ -147,7 +160,7 @@ class DLHDClient:
         return base_url
 
     async def stream_segment(self, channel: DLHDChannel, segment_path: str):
-        referer = "https://claplivehdplay.ru/"
+        referer = await self.get_channel_referer(channel)
         base_url = await self.get_channel_base_url(channel)
         segment_url = urllib.parse.urljoin(base_url, segment_path)
 
