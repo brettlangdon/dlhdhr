@@ -96,7 +96,7 @@ class ZapTV:
                         )
                     )
 
-                listings[code] = sorted(programs, key=lambda p: p.start_time, reverse=True)
+                listings[code] = sorted(programs, key=lambda p: p.start_time)
 
         return listings
 

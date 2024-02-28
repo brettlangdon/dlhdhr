@@ -106,7 +106,7 @@ class Zap2it:
                         )
                     )
 
-                listings[call_sign] = sorted(programs, key=lambda p: p.start_time, reverse=True)
+                listings[call_sign] = sorted(programs, key=lambda p: p.start_time)
 
         return listings
 
