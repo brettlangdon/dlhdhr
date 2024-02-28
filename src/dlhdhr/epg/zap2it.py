@@ -31,10 +31,11 @@ class Zap2it:
 
     def _cleanup_listings(self) -> None:
         now = datetime.datetime.now(datetime.UTC)
+        cutoff = now - datetime.timedelta(hours=3)
 
         updated: dict[str, list[Program]] = {}
         for call_sign, programs in self._listings.items():
-            updated_programs = [p for p in programs if p.end_time > now]
+            updated_programs = [p for p in programs if p.end_time > cutoff]
             if updated_programs:
                 updated[call_sign] = updated_programs
         self._listings = updated
@@ -58,6 +59,7 @@ class Zap2it:
 
         listings: dict[str, list[Program]] = {}
         now = datetime.datetime.now(datetime.UTC)
+        cutoff = now - datetime.timedelta(hours=3)
         async with self._get_client() as client:
             channels = set()
             events = {}
@@ -84,7 +86,7 @@ class Zap2it:
                 programs = []
                 for evt_data in events[call_sign].values():
                     end_time = datetime.datetime.fromisoformat(evt_data["endTime"])
-                    if end_time < now:
+                    if end_time < cutoff:
                         continue
 
                     rating = None
@@ -96,6 +98,7 @@ class Zap2it:
                             start_time=datetime.datetime.fromisoformat(evt_data["startTime"]),
                             end_time=end_time,
                             title=evt_data["program"]["title"],
+                            subtitle=evt_data["program"].get("episodeTitle") or None,
                             description=evt_data["program"]["shortDesc"],
                             season=evt_data["program"]["season"],
                             episode=evt_data["program"]["episode"],

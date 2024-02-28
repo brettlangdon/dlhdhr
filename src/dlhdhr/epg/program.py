@@ -18,6 +18,7 @@ class Program:
     title: str
     description: str
     tags: list[str]
+    subtitle: str | None
     thumbnail: str | None
     season: int | None
     episode: int | None
@@ -34,6 +35,8 @@ class Program:
         programme = Element("programme", attrib={"start": start_time, "stop": end_time, "channel": channel.xmltv_id})
         if self.title:
             SubElement(programme, "title", attrib={"lang": "en"}).text = self.title
+        if self.subtitle:
+            SubElement(programme, "sub-title", attrib={"lang": "en"}).text = self.subtitle
         if self.description:
             SubElement(programme, "desc", attrib={"lang": "en"}).text = self.description
 
@@ -50,6 +53,10 @@ class Program:
             season_id = self.season or ""
             episode_id = self.episode or ""
             SubElement(programme, "episode-num", attrib={"system": "xmltv_ns"}).text = f"{season_id}.{episode_id}."
+            if self.season and self.episode:
+                SubElement(
+                    programme, "episode-num", attrib={"system": "onscreen"}
+                ).text = f"S{self.season} E{self.episode}"
 
         if self.rating:
             rating = SubElement(programme, "rating", attrib={"system": self.rating.system})

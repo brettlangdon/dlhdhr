@@ -31,10 +31,11 @@ class ZapTV:
 
     def _cleanup_listings(self) -> None:
         now = datetime.datetime.now(datetime.UTC)
+        cutoff = now - datetime.timedelta(hours=3)
 
         updated: dict[str, list[Program]] = {}
         for call_sign, programs in self._listings.items():
-            updated_programs = [p for p in programs if p.end_time > now]
+            updated_programs = [p for p in programs if p.end_time > cutoff]
             if updated_programs:
                 updated[call_sign] = updated_programs
         self._listings = updated
@@ -42,6 +43,7 @@ class ZapTV:
     async def _fetch_listings(self) -> dict[str, list[Program]]:
         listings: dict[str, list[Program]] = {}
         now = datetime.datetime.now(datetime.UTC)
+        cutoff = now - datetime.timedelta(hours=3)
         async with self._get_client() as client:
             channels = set()
             events = {}
@@ -66,16 +68,20 @@ class ZapTV:
                 programs = []
                 for evt_data in events[code].values():
                     end_time = datetime.datetime.fromisoformat(evt_data["endsAt"])
-                    if end_time < now:
+                    if end_time < cutoff:
                         continue
 
                     ep_data = evt_data["metadata"].get("episode") or {}
-                    season = ep_data.get("season") or None
+                    season: str | None = ep_data.get("season") or None
                     if season is not None:
                         season = str(season)
-                    episode = ep_data.get("number") or None
+                    episode: str | None = ep_data.get("number") or None
                     if episode is not None:
                         episode = str(episode)
+
+                    episode_title: str | None = ep_data.get("title") or None
+                    if episode_title is not None:
+                        episode_title = str(episode_title)
 
                     release_year = evt_data["metadata"].get("year")
                     if release_year is not None:
@@ -87,6 +93,7 @@ class ZapTV:
                             end_time=end_time,
                             title=evt_data["title"],
                             description="",
+                            subtitle=episode_title,
                             season=season,
                             episode=episode,
                             tags=[],
