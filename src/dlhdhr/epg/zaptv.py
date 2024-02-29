@@ -7,7 +7,6 @@ import httpx
 from dlhdhr import config
 from dlhdhr.dlhd.channels import DLHDChannel
 from dlhdhr.epg.program import Program
-from dlhdhr.epg.program import Rating
 
 
 @dataclass()

@@ -7,10 +7,12 @@ from dlhdhr.dlhd import DLHDChannel
 from dlhdhr.epg.zap2it import Zap2it
 from dlhdhr.epg.program import Program
 from dlhdhr.epg.zaptv import ZapTV
+from dlhdhr.epg.epgsky import EPGSky
 
 
 @dataclass()
 class EPG:
+    epgsky: EPGSky = field(default_factory=EPGSky)
     zap2it: Zap2it = field(default_factory=Zap2it)
     zaptv: ZapTV = field(default_factory=ZapTV)
 
@@ -18,6 +20,8 @@ class EPG:
         if channel.country_code == "us":
             return await self.zap2it.get_channel_programs(channel)
         elif channel.country_code == "uk":
+            if channel.epgsky_id:
+                return await self.epgsky.get_channel_programs(channel)
             return await self.zaptv.get_channel_programs(channel)
 
         return []
