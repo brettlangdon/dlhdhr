@@ -58,7 +58,7 @@ class EPGSky:
                     programs = []
                     for event in channel["events"]:
                         start_time = datetime.datetime.fromtimestamp(event["st"], datetime.UTC)
-                        end_time = start_time + datetime.timedelta(event["d"])
+                        end_time = start_time + datetime.timedelta(seconds=event["d"])
                         if end_time < cutoff:
                             continue
 
