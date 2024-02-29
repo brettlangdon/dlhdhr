@@ -31,7 +31,7 @@ class Program:
 
     def to_xmltv(self, channel: DLHDChannel) -> Element | None:
         start_time = self.start_time.strftime("%Y%m%d%H%M%S %z")
-        end_time = self.start_time.strftime("%Y%m%d%H%M%S %z")
+        end_time = self.end_time.strftime("%Y%m%d%H%M%S %z")
 
         programme = Element("programme", attrib={"start": start_time, "stop": end_time, "channel": str(channel.number)})
         if self.title:
