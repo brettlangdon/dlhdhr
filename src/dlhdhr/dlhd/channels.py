@@ -14,6 +14,7 @@ class DLHDChannel:
     xmltv_id: str | None = None
     call_sign: str | None = None
     epgsky_id: str | None = None
+    thumbnail: str | None = None
 
     @property
     def playlist_m3u8(self) -> str:
@@ -23,10 +24,14 @@ class DLHDChannel:
     def channel_proxy(self) -> str:
         return f"/channel/{self.number}"
 
-    def to_xmltv(self) -> Element:
+    def to_xmltv(self, thumbnail: str | None = None) -> Element:
         node = Element("channel", attrib={"id": str(self.number)})
         SubElement(node, "display-name", attrib={"lang": "en"}).text = self.name
         SubElement(node, "lcn").text = self.number
+
+        if thumbnail or self.thumbnail:
+            SubElement(node, "icon", attrib={"src": thumbnail or self.thumbnail})
+
         return node
 
 

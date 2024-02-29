@@ -26,13 +26,19 @@ class EPG:
 
         return []
 
+    async def get_channel_icon_from_epg(self, channel: DLHDChannel) -> str | None:
+        if channel.country_code == "uk":
+            if channel.epgsky_id:
+                return f"https://d2n0069hmnqmmx.cloudfront.net/epgdata/1.0/newchanlogos/80/35/skychb{channel.epgsky_id}.png"
+        return None
+
     async def generate_xmltv(self, channels: Iterable[DLHDChannel]) -> bytes:
         tv = Element("tv", attrib={"generator-info-name": "dlhdhr"})
 
         channels = [c for c in channels if c.xmltv_id]
 
         for channel in channels:
-            tv.append(channel.to_xmltv())
+            tv.append(channel.to_xmltv(thumbnail=await self.get_channel_icon_from_epg(channel)))
 
             programs = await self.get_channel_programs(channel)
 
