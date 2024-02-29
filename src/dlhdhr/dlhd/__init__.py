@@ -21,13 +21,11 @@ class DLHDClient:
     _channels_last_fetch: float = 0
     _base_urls: dict[DLHDChannel, (float, str)]
     _referers: dict[DLHDChannel, str]
-    _cookies: dict[str, str]
 
     def __init__(self):
         self._channels = {}
         self._base_urls = {}
         self._referers = {}
-        self._cookies = {}
 
     async def _log_request(self, request):
         if config.DEBUG:
@@ -38,12 +36,24 @@ class DLHDClient:
             request = response.request
             print(f"Response event hook: {request.method} {request.url} - Status {response.status_code}")
 
-        self._cookies.update(response.cookies)
-
     def _get_client(self, referer: str = ""):
+        parsed = urllib.parse.urlparse(referer)
+        origin = f"{parsed.scheme}://{parsed.netloc}"
+        referer = f"{parsed.scheme}://{parsed.netloc}/"
+
         headers = {
             "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:122.0) Gecko/20100101 Firefox/122.0",
+            "Origin": origin,
             "Referer": referer,
+            "Accept": "*/*",
+            "Accept-Language": "en-US,en;q=0.5",
+            "Sec-Fetch-Dest": "empty",
+            "Sec-Fetch-Mode": "cors",
+            "Sec-Fetch-Site": "cross-site",
+            "Sec-GPC": "1",
+            "Pragma": "no-cache",
+            "Cache-Control": "no-cache",
+            "TE": "trailers",
         }
         return httpx.AsyncClient(
             base_url=config.DLHD_BASE_URL,
@@ -51,7 +61,6 @@ class DLHDClient:
             max_redirects=2,
             verify=True,
             timeout=8.0,
-            cookies=self._cookies,
             event_hooks={"request": [self._log_request], "response": [self._log_response]},
         )
 
@@ -140,6 +149,7 @@ class DLHDClient:
 
     async def get_channel_key(self, channel: DLHDChannel, proxy_url: str) -> bytes:
         referer = await self.get_channel_referer(channel)
+
         async with self._get_client(referer=referer) as client:
             res = await client.get(proxy_url)
             res.raise_for_status()
