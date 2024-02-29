@@ -107,3 +107,8 @@ class EPGSky:
             return []
 
         return self._listings[channel.epgsky_id]
+
+    def get_channel_icon(self, channel: DLHDChannel) -> str | None:
+        if not channel.epgsky_id:
+            return None
+        return f"https://d2n0069hmnqmmx.cloudfront.net/epgdata/1.0/newchanlogos/80/35/skychb{channel.epgsky_id}.png"

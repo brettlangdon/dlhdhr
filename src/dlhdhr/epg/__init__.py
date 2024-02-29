@@ -27,9 +27,11 @@ class EPG:
         return []
 
     async def get_channel_icon_from_epg(self, channel: DLHDChannel) -> str | None:
-        if channel.country_code == "uk":
+        if channel.country_code == "us":
+            return await self.zap2it.get_channel_icon(channel)
+        elif channel.country_code == "uk":
             if channel.epgsky_id:
-                return f"https://d2n0069hmnqmmx.cloudfront.net/epgdata/1.0/newchanlogos/80/35/skychb{channel.epgsky_id}.png"
+                return self.epgsky.get_channel_icon(channel)
         return None
 
     async def generate_xmltv(self, channels: Iterable[DLHDChannel]) -> bytes:
@@ -42,8 +44,6 @@ class EPG:
 
             programs = await self.get_channel_programs(channel)
 
-            # Note: The order of the elements in the <programme /> matters
-            # title, desc, date, category, icon, episode-num, rating
             for program in programs:
                 node = program.to_xmltv(channel)
                 if node:

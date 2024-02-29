@@ -15,6 +15,7 @@ class Zap2it:
     _BASE_URL = "https://tvlistings.zap2it.com/api/"
     _listings: dict[str, Program] = field(default_factory=dict)
     _last_fetch: float = 0
+    _channel_icons: dict[str, str] = field(default_factory=dict)
 
     def _get_client(self) -> httpx.AsyncClient:
         return httpx.AsyncClient(
@@ -76,6 +77,12 @@ class Zap2it:
                     channels.add(call_sign)
                     if call_sign not in events:
                         events[call_sign] = {}
+
+                    if ch_data.get("thumbnail"):
+                        thumbnail = ch_data["thumbnail"]
+                        if thumbnail.startswith("//"):
+                            thumbnail = f"https:{thumbnail}"
+                        self._channel_icons[call_sign] = thumbnail
 
                     for evt in ch_data["events"]:
                         key = (evt["startTime"], evt["endTime"])
@@ -149,3 +156,10 @@ class Zap2it:
             return []
 
         return self._listings[channel.call_sign]
+
+    async def get_channel_icon(self, channel: DLHDChannel) -> str | None:
+        if not channel.call_sign:
+            return None
+
+        await self._refresh_listings()
+        return self._channel_icons.get(channel.call_sign)
