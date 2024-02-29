@@ -87,6 +87,10 @@ class ZapTV:
                     if release_year is not None:
                         release_year = str(release_year)
 
+                    thumbnail = evt_data["image"] or None
+                    if thumbnail is not None and thumbnail.startswith("//"):
+                        thumbnail = f"https:{thumbnail}"
+
                     programs.append(
                         Program(
                             start_time=datetime.datetime.fromisoformat(evt_data["startsAt"]),
@@ -98,7 +102,7 @@ class ZapTV:
                             episode=episode,
                             tags=[],
                             release_year=release_year,
-                            thumbnail=evt_data["image"] or None,
+                            thumbnail=thumbnail,
                             rating=None,
                         )
                     )
