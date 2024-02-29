@@ -25,6 +25,10 @@ class Program:
     rating: Rating | None
     release_year: str | None
 
+    @property
+    def duration_minutes(self) -> int:
+        return int((self.end_time - self.start_time).total_seconds() / 60)
+
     def to_xmltv(self, channel: DLHDChannel) -> Element | None:
         start_time = self.start_time.strftime("%Y%m%d%H%M%S %z")
         end_time = self.start_time.strftime("%Y%m%d%H%M%S %z")
@@ -34,8 +38,12 @@ class Program:
             SubElement(programme, "title", attrib={"lang": "en"}).text = self.title
         if self.subtitle:
             SubElement(programme, "sub-title", attrib={"lang": "en"}).text = self.subtitle
+        else:
+            SubElement(programme, "sub-title", attrib={"lang": "en"}).text = self.title
         if self.description:
             SubElement(programme, "desc", attrib={"lang": "en"}).text = self.description
+
+        SubElement(programme, "length", attrib={"units": "minutes"}).text = str(self.duration_minutes)
 
         if self.release_year:
             SubElement(programme, "date").text = self.release_year

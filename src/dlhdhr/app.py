@@ -174,7 +174,6 @@ async def channel_key_proxy(request: Request) -> Response:
 def create_app() -> Starlette:
     dlhd_client = DLHDClient()
     tuner_manager = TunerManager()
-    epg = EPG()
 
     app = Starlette()
     app.state.dlhd = dlhd_client
