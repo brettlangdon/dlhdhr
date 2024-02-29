@@ -229,7 +229,7 @@ _CHANNELS = [
     ),
     DLHDChannel(number="309", name="CNBC USA", country_code="us", xmltv_id="CNBC.us", call_sign="CNBC"),
     DLHDChannel(
-        number="310", name="Comedy Central", country_code="us", xmltv_id="ComedyCentral.us", call_sign="COMEDYP"
+        number="310", name="Comedy Central", country_code="us", xmltv_id="ComedyCentral.us", call_sign="COMEDY"
     ),
     DLHDChannel(number="311", name="Discovery Life Channel", country_code="us", xmltv_id="", call_sign=""),
     DLHDChannel(number="312", name="Disney Channel", country_code="us", xmltv_id="DisneyChannel.us", call_sign="DISN"),
