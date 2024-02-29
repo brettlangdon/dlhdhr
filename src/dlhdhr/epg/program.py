@@ -1,5 +1,5 @@
 import datetime
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from xml.etree.ElementTree import Element, SubElement
 
 from dlhdhr.dlhd import DLHDChannel
@@ -17,13 +17,14 @@ class Program:
     end_time: datetime.datetime
     title: str
     description: str
-    tags: list[str]
-    subtitle: str | None
-    thumbnail: str | None
-    season: int | None
-    episode: int | None
-    rating: Rating | None
-    release_year: str | None
+    tags: list[str] = field(default_factory=list)
+    subtitle: str | None = None
+    thumbnail: str | None = None
+    season: int | None = None
+    episode: int | None = None
+    rating: Rating | None = None
+    release_year: str | None = None
+    dd_progid: str | None = None
 
     @property
     def duration_minutes(self) -> int:
@@ -54,14 +55,16 @@ class Program:
         if self.thumbnail:
             SubElement(programme, "icon", attrib={"src": self.thumbnail})
 
-        if self.season or self.episode:
-            season_id = self.season or ""
-            episode_id = self.episode or ""
-            SubElement(programme, "episode-num", attrib={"system": "xmltv_ns"}).text = f"{season_id}.{episode_id}."
+        if self.season and self.episode:
             if self.season and self.episode:
+                SubElement(
+                    programme, "episode-num", attrib={"system": "xmltv_ns"}
+                ).text = f"{self.season}.{self.episode}."
                 SubElement(
                     programme, "episode-num", attrib={"system": "onscreen"}
                 ).text = f"S{self.season} E{self.episode}"
+        if self.dd_progid:
+            SubElement(programme, "episode-num", attrib={"system": "dd_progid"}).text = self.dd_progid
 
         if self.rating:
             rating = SubElement(programme, "rating", attrib={"system": self.rating.system})
