@@ -20,6 +20,13 @@ class FFMpegProcess:
         self._ffmpeg_command = " ".join(
             [
                 "ffmpeg",
+                "-threads",
+                "4",
+                "-fflags",
+                "+genpts+discardcorrupt+igndts",
+                "-re",
+                "-seg_max_retry",
+                "1",
                 "-i",
                 f'"{playlist_url}"',
                 "-vcodec",
@@ -29,7 +36,7 @@ class FFMpegProcess:
                 "-crf",
                 "18",
                 "-preset",
-                "ulstrafast",
+                "ultrafast",
                 "-f",
                 "mpegts",
                 "-loglevel",
