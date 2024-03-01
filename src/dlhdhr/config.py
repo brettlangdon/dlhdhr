@@ -14,6 +14,8 @@ PORT: int = int(os.getenv("DLHDHR_PORT", 8000))
 DEBUG: bool = os.getenv("DLHDHR_DEBUG", "0").lower() in ("1", "true")
 
 DLHD_BASE_URL = os.getenv("DLHD_BASE_URL", "https://dlhd.sx/")
+DLHD_DEVICE_ID = os.getenv("DLHD_DEVICE_ID", "dlhdhr")
+DLHD_FRIENDLY_NAME = os.getenv("DLHD_FRIENDLY_NAME", "dlhdhr")
 
 CHANNEL_EXCLUDE: set[str] | None = _set_or_none("DLHDHR_CHANNEL_EXCLUDE")
 CHANNEL_ALLOW: set[str] | None = _set_or_none("DLHDHR_CHANNEL_ALLOW")

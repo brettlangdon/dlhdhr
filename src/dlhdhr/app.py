@@ -108,14 +108,14 @@ async def discover_json(request: Request) -> JSONResponse:
 
     return JSONResponse(
         {
-            "FriendlyName": "dlhdhomerun",
-            "Manufacturer": "dlhdhomerun - Silicondust",
+            "FriendlyName": config.DLHD_FRIENDLY_NAME,
+            "Manufacturer": "dlhdhomerun",
             "ManufacturerURL": "https://c653labs.com/",
             "ModelNumber": "HDTC-2US",
             "FirmwareName": "hdhomeruntc_atsc",
             "TunerCount": tuners.total_available_listeners,
             "FirmwareVersion": "20170930",
-            "DeviceID": "dlhdhomerun",
+            "DeviceID": config.DLHD_DEVICE_ID,
             "DeviceAuth": "",
             "BaseURL": get_public_url(request, "/"),
             "LineupURL": get_public_url(request, "/lineup.json"),
